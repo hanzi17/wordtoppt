@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word → PowerPoint 변환기 (Pro Version)</title>
+    <title>Word → PowerPoint Converter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
@@ -12,16 +12,15 @@
         :root {
             --primary: #4F46E5;
             --primary-hover: #4338CA;
-            --bg-color: #F9FAFB;
+            --bg-color: #F8FAFC;
             --card-bg: #FFFFFF;
-            --text-main: #111827;
-            --text-muted: #6B7280;
-            --border: #E5E7EB;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
         }
 
         body {
-            font-family: 'Pretendard', sans-serif;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -32,178 +31,66 @@
             padding: 20px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
+        .container { width: 100%; max-width: 520px; }
 
         .main-card {
             background-color: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 48px;
         }
 
-        .header-section {
-            text-align: center;
-            margin-bottom: 32px;
-        }
+        .header-section { text-align: center; margin-bottom: 40px; }
+        .header-section h1 { font-size: 26px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.02em; }
+        .header-section p { font-size: 15px; color: var(--text-muted); margin: 0; line-height: 1.5; }
 
-        .header-section h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin: 0 0 8px 0;
-            color: var(--text-main);
-        }
-
-        .header-section p {
-            font-size: 15px;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        /* 파일 업로드 영역 */
-        .upload-section {
-            margin-bottom: 32px;
-        }
-
+        .upload-section { margin-bottom: 32px; }
         .upload-label {
-            display: block;
-            border: 2px dashed #C7D2FE;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            background-color: #FDFEFE;
-            transition: all 0.2s;
+            display: block; border: 2px dashed #CBD5E1; border-radius: 16px; padding: 40px 20px;
+            text-align: center; cursor: pointer; transition: all 0.2s ease;
         }
-
-        .upload-label:hover {
-            border-color: var(--primary);
-            background-color: #F9FAFB;
-        }
-
+        .upload-label:hover { border-color: var(--primary); background-color: #F1F5F9; }
+        
         .upload-icon {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background-color: #E0E7FF;
-            color: var(--primary);
-            margin-bottom: 16px;
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 56px; height: 56px; border-radius: 14px;
+            background-color: #EEF2FF; color: var(--primary); margin-bottom: 16px;
         }
+        .upload-icon svg { width: 28px; height: 28px; }
 
-        .upload-icon svg { width: 24px; height: 24px; }
-
-        .upload-text {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        .upload-subtext {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
+        .upload-text { display: block; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .upload-subtext { display: block; font-size: 13px; color: var(--text-muted); }
         input[type="file"] { display: none; }
 
-        /* 변환 옵션 카드 */
-        .options-section {
-            background-color: #FDFEFE;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
+        .options-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;
+            padding: 24px; background-color: #F8FAFC; border-radius: 16px; border: 1px solid var(--border);
         }
 
-        .options-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 20px;
-        }
-
-        .options-header svg { width: 16px; height: 16px; color: var(--text-muted); }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group:last-child { margin-bottom: 0; }
-
-        .group-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .checkbox-group input {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--primary);
-            margin: 0;
-            cursor: pointer;
-        }
-
-        .checkbox-group label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-main);
-            margin: 0;
-            cursor: pointer;
-        }
+        .option-item { display: flex; flex-direction: column; gap: 8px; }
+        .option-item.full { grid-column: 1 / -1; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        
+        .option-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
 
         select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 13px;
-            background-color: #F9FAFB;
-            cursor: pointer;
-            transition: border-color 0.2s;
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 14px; font-weight: 500; background-color: white; cursor: pointer;
         }
 
-        select:focus { outline: none; border-color: var(--primary); }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .checkbox-wrapper input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        .checkbox-wrapper span { font-size: 14px; font-weight: 600; }
 
-        /* 변환 버튼 */
         button {
-            width: 100%;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            width: 100%; background-color: var(--primary); color: white; border: none;
+            padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: transform 0.1s, background-color 0.2s;
         }
-
         button:hover { background-color: var(--primary-hover); }
-        button:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #94A3B8; cursor: not-allowed; }
 
-        #status {
-            margin-top: 16px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--primary);
-            font-weight: 600;
-        }
+        #status { margin-top: 20px; text-align: center; font-size: 14px; font-weight: 600; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -211,42 +98,37 @@
     <div class="container">
         <div class="main-card">
             <div class="header-section">
-                <h1>Word → PowerPoint 변환기</h1>
-                <p>서식을 유지하면서 워드 문서를 파워포인트로 변환하세요</p>
+                <h1>Word → PPT 변환기</h1>
+                <p>디자인과 서식을 유지하며 스마트하게 변환합니다</p>
             </div>
             
             <div class="upload-section">
                 <label for="upload" class="upload-label">
                     <span class="upload-icon">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 16V8M12 8L9 11M12 8L15 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V15M5 3H19C20.1046 3 21 3.89543 21 5V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                     </span>
-                    <span class="upload-text">워드 파일을 드래그하거나 클릭하세요</span>
-                    <span class="upload-subtext">지원 파일: .docx</span>
+                    <span class="upload-text" id="file-display-name">워드 파일을 여기에 끌어다 놓으세요</span>
+                    <span class="upload-subtext">지원 형식: .docx</span>
                 </label>
-                <input type="file" id="upload" accept=".docx">
+                <input type="file" id="upload" accept=".docx" onchange="updateFileName()">
             </div>
 
-            <div class="options-section">
-                <div class="options-header">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    변환 옵션
+            <div class="options-grid">
+                <div class="option-item full">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="max-lines" checked>
+                        <span>한 슬라이드당 최대 6줄 자동 분할</span>
+                    </label>
                 </div>
-
-                <div class="form-group checkbox-group">
-                    <input type="checkbox" id="max-lines" checked>
-                    <label for="max-lines">한 슬라이드당 최대 6줄 제한 (자동 분할)</label>
-                </div>
-
-                <div class="form-group">
-                    <label for="font-size" class="group-label">글자 크기</label>
+                <div class="option-item">
+                    <label class="option-label">글자 크기</label>
                     <select id="font-size">
                         <option value="48">48pt</option>
                         <option value="60">60pt</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="text-align" class="group-label">텍스트 정렬</label>
+                <div class="option-item">
+                    <label class="option-label">텍스트 정렬</label>
                     <select id="text-align">
                         <option value="center">중앙 정렬</option>
                         <option value="left">좌측 정렬</option>
@@ -254,13 +136,20 @@
                 </div>
             </div>
 
-            <button id="convert-btn" onclick="startConversion()">파워포인트로 변환 및 다운로드</button>
+            <button id="convert-btn" onclick="startConversion()">파워포인트 생성 및 다운로드</button>
             <div id="status"></div>
         </div>
     </div>
 
     <script>
-        // RGB나 색상 이름을 HEX 코드로 변환하는 헬퍼 함수
+        function updateFileName() {
+            const input = document.getElementById('upload');
+            const display = document.getElementById('file-display-name');
+            if (input.files.length > 0) {
+                display.textContent = input.files[0].name;
+            }
+        }
+
         function colorToHex(color) {
             let ctx = document.createElement("canvas").getContext("2d");
             ctx.fillStyle = color;
@@ -268,7 +157,6 @@
             return hex.startsWith('#') ? hex.replace('#', '').toUpperCase() : '000000';
         }
 
-        // HTML 노드를 순회하며 텍스트와 서식을 추출하는 함수
         function parseNode(node, currentStyle) {
             let result = [];
             node.childNodes.forEach(child => {
@@ -291,69 +179,60 @@
             const statusDiv = document.getElementById('status');
             const btn = document.getElementById('convert-btn');
 
-            if (!fileInput.files.length) { alert("먼저 워드 파일을 선택해주세요."); return; }
+            if (!fileInput.files.length) { alert("파일을 먼저 선택해주세요."); return; }
 
             const file = fileInput.files[0];
+            
+            // 💡 파일명 동기화 로직: 확장자 제거
+            const originalName = file.name;
+            const pptFileName = originalName.toLowerCase().endsWith('.docx') 
+                                ? originalName.slice(0, -5) 
+                                : originalName;
+
             btn.disabled = true;
-            statusDiv.textContent = "문서를 분석하는 중...";
+            statusDiv.textContent = "변환 작업을 진행 중입니다...";
 
             try {
                 const arrayBuffer = await file.arrayBuffer();
+                const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, { ignoreEmptyParagraphs: false });
                 
-                // Mammoth를 사용하여 docx를 HTML로 변환 (빈 줄 보존 중요)
-                const result = await mammoth.convertToHtml(
-                    { arrayBuffer: arrayBuffer },
-                    { ignoreEmptyParagraphs: false }
-                );
+                // 💡 엔터(빈 줄) 무시 방지를 위한 텍스트 마킹 처리
+                let rawHtml = result.value;
+                rawHtml = rawHtml.replace(/<p>\s*<\/p>/g, '<p>___EMPTY_LINE___</p>');
+                rawHtml = rawHtml.replace(/<p>\s*<br\s*\/?>\s*<\/p>/g, '<p>___EMPTY_LINE___</p>');
+
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(result.value, 'text/html');
+                const doc = parser.parseFromString(rawHtml, 'text/html');
                 const paragraphs = Array.from(doc.querySelectorAll('p'));
 
-                // 로직 요구사항: 각 단락을 서식 객체 배열로 변환
                 let allLines = paragraphs.map(p => {
-                    const lineContent = parseNode(p, {});
-                    const rawText = p.textContent.trim();
-                    // 완전히 비어있는 줄인지 확인
-                    return { content: lineContent, isEmpty: rawText === "" };
+                    const content = parseNode(p, {});
+                    const isMarker = p.textContent.includes("___EMPTY_LINE___");
+                    return { content, isEmpty: isMarker || p.textContent.trim() === "" };
                 });
 
-                // 1차 분할: '빈 줄(엔터 2번)' 기준
                 let initialChunks = [];
                 let tempChunk = [];
                 allLines.forEach(line => {
                     if (line.isEmpty) {
-                        if (tempChunk.length > 0) {
-                            initialChunks.push(tempChunk);
-                            tempChunk = [];
-                        }
+                        if (tempChunk.length > 0) { initialChunks.push(tempChunk); tempChunk = []; }
                     } else {
                         tempChunk.push(line.content);
                     }
                 });
-                if (tempChunk.length > 0) initialChunks.push(tempChunk); // 마지막 덩어리 추가
+                if (tempChunk.length > 0) initialChunks.push(tempChunk);
 
-                // 2차 분할: 6줄 초과 시 강제 분할 (로직 핵심)
                 const enforceMaxLines = document.getElementById('max-lines').checked;
                 let finalChunks = [];
-
                 initialChunks.forEach(chunk => {
-                    // 사용자 옵션이 켜져 있고, 6줄을 초과한다면
                     if (enforceMaxLines && chunk.length > 6) {
-                        // 자바스크립트의 slice를 사용해 정확히 6줄 단위로 자름
-                        for (let i = 0; i < chunk.length; i += 6) {
-                            finalChunks.push(chunk.slice(i, i + 6));
-                        }
+                        for (let i = 0; i < chunk.length; i += 6) { finalChunks.push(chunk.slice(i, i + 6)); }
                     } else {
                         finalChunks.push(chunk);
                     }
                 });
 
-                statusDiv.textContent = "슬라이드를 생성하는 중...";
-                
-                // PPT 생성 (PptxGenJS)
                 let pptx = new PptxGenJS();
-                
-                // 도화지 크기 설정 문제 해결: 최신 Widescreen 규격(13.33 x 7.5인치) 강제 적용
                 pptx.defineLayout({ name: 'WIDESCREEN_STANDARD', width: 13.33, height: 7.5 });
                 pptx.layout = 'WIDESCREEN_STANDARD';
 
@@ -363,39 +242,23 @@
                 finalChunks.forEach(chunk => {
                     let slide = pptx.addSlide();
                     let textArray = [];
-                    
                     chunk.forEach((line, index) => {
                         line.forEach(obj => {
                             textArray.push({
                                 text: obj.text,
-                                options: {
-                                    bold: obj.options.bold || false,
-                                    color: obj.options.color || '000000', // 기본 검은색
-                                    fontFace: '옥션고딕 B', // 기본 폰트
-                                    fontSize: fontSize
-                                }
+                                options: { bold: obj.options.bold || false, color: obj.options.color || '000000', fontFace: '옥션고딕 B', fontSize: fontSize }
                             });
                         });
-                        // 마지막 줄이 아니면 PptxGenJS 내부 줄바꿈 추가
-                        if (index < chunk.length - 1) {
-                            textArray.push({ text: '', options: { breakLine: true } });
-                        }
+                        if (index < chunk.length - 1) textArray.push({ text: '', options: { breakLine: true } });
                     });
-
-                    // PptxGenJS의 Text 객체 배열 방식 사용
-                    slide.addText(textArray, {
-                        x: '5%', y: '5%', w: '90%', h: '90%', // 여백 조정
-                        align: textAlign,
-                        valign: 'middle' // 세로 정렬 중앙
-                    });
+                    slide.addText(textArray, { x: '5%', y: '5%', w: '90%', h: '90%', align: textAlign, valign: 'middle' });
                 });
 
-                await pptx.writeFile({ fileName: `Converted_PPT_${file.name.replace('.docx', '')}_${Date.now()}.pptx` });
-                statusDiv.textContent = "변환 완료 및 다운로드 시작!";
+                // 💡 동기화된 파일명으로 저장
+                await pptx.writeFile({ fileName: `${pptFileName}.pptx` });
+                statusDiv.textContent = "✨ 성공적으로 변환되었습니다!";
             } catch (error) {
-                console.error(error);
                 statusDiv.textContent = "오류 발생: " + error.message;
-                statusDiv.style.color = "red";
             } finally {
                 btn.disabled = false;
             }
