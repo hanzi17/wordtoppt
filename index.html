@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word to PPT Converter</title>
+    <title>Word to PPT Converter (Fixed)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
@@ -20,7 +20,7 @@
         }
 
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', sans-serif;
+            font-family: 'Pretendard', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -29,7 +29,6 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            box-sizing: border-box;
         }
 
         .card {
@@ -39,96 +38,27 @@
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             padding: 40px;
-            box-sizing: border-box;
         }
 
-        h2 {
-            margin-top: 0;
-            margin-bottom: 24px;
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-        }
+        h2 { margin-top: 0; margin-bottom: 24px; text-align: center; }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 
         select, input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 14px;
-            box-sizing: border-box;
-            background-color: #F9FAFB;
-            transition: border-color 0.2s;
+            width: 100%; padding: 12px; border: 1px solid var(--border);
+            border-radius: 10px; font-size: 14px; background-color: #F9FAFB;
         }
 
-        select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        .checkbox-group input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--primary);
-        }
-
-        .checkbox-group label {
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            margin: 0;
-        }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); }
 
         button {
-            width: 100%;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            width: 100%; background-color: var(--primary); color: white; border: none;
+            padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
         }
 
-        button:hover {
-            background-color: var(--primary-hover);
-        }
-
-        button:disabled {
-            background-color: var(--text-muted);
-            cursor: not-allowed;
-        }
-
-        #status {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--primary);
-            min-height: 20px;
-        }
+        #status { margin-top: 20px; text-align: center; font-size: 14px; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -141,17 +71,9 @@
             <input type="file" id="upload" accept=".docx">
         </div>
 
-        <div class="form-group">
-            <label for="split-criteria">슬라이드 분할 기준</label>
-            <select id="split-criteria">
-                <option value="empty">빈 줄 (엔터 2번)</option>
-                <option value="separator">구분선 (---)</option>
-            </select>
-        </div>
-
         <div class="checkbox-group">
             <input type="checkbox" id="max-lines" checked>
-            <label for="max-lines">한 슬라이드당 최대 6줄 제한 적용</label>
+            <label for="max-lines">한 슬라이드당 최대 6줄 제한 (자동 분할)</label>
         </div>
 
         <div class="form-group">
@@ -165,50 +87,38 @@
         <div class="form-group">
             <label for="text-align">텍스트 정렬</label>
             <select id="text-align">
-                <option value="left">좌측 정렬</option>
                 <option value="center">중앙 정렬</option>
+                <option value="left">좌측 정렬</option>
             </select>
         </div>
 
-        <button id="convert-btn" onclick="startConversion()">PPT로 변환하기</button>
+        <button id="convert-btn" onclick="startConversion()">PPT로 변환 및 다운로드</button>
         <div id="status"></div>
     </div>
 
     <script>
-        // RGB나 색상 이름을 HEX 코드로 변환하는 헬퍼 함수
         function colorToHex(color) {
             let ctx = document.createElement("canvas").getContext("2d");
             ctx.fillStyle = color;
-            return ctx.fillStyle.replace('#', '').toUpperCase();
+            let hex = ctx.fillStyle;
+            return hex.startsWith('#') ? hex.replace('#', '').toUpperCase() : '000000';
         }
 
-        // HTML 노드를 순회하며 텍스트와 서식을 추출하는 함수
+        // 특정 노드(p태그 등) 내부의 텍스트와 서식을 추출
         function parseNode(node, currentStyle) {
             let result = [];
-            if (node.nodeType === Node.TEXT_NODE) {
-                let text = node.textContent;
-                // 완전한 공백이 아닌 경우 텍스트 객체 추가
-                if (text.trim() !== "" || text.includes(' ')) {
-                    result.push({ text: text, options: { ...currentStyle } });
-                }
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                let newStyle = { ...currentStyle };
-                
-                // Bold 처리
-                if (node.tagName === 'STRONG' || node.tagName === 'B') {
-                    newStyle.bold = true;
-                }
-                
-                // 색상 처리 (인라인 스타일)
-                if (node.style && node.style.color) {
-                    newStyle.color = colorToHex(node.style.color);
-                }
-
-                // 자식 노드 재귀 탐색
-                for (let child of node.childNodes) {
+            node.childNodes.forEach(child => {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    if (child.textContent.length > 0) {
+                        result.push({ text: child.textContent, options: { ...currentStyle } });
+                    }
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    let newStyle = { ...currentStyle };
+                    if (['STRONG', 'B'].includes(child.tagName)) newStyle.bold = true;
+                    if (child.style && child.style.color) newStyle.color = colorToHex(child.style.color);
                     result = result.concat(parseNode(child, newStyle));
                 }
-            }
+            });
             return result;
         }
 
@@ -217,140 +127,93 @@
             const statusDiv = document.getElementById('status');
             const btn = document.getElementById('convert-btn');
 
-            if (!fileInput.files.length) {
-                alert("먼저 변환할 Word(.docx) 파일을 선택해주세요.");
-                return;
-            }
+            if (!fileInput.files.length) { alert("파일을 선택해주세요."); return; }
 
-            const file = fileInput.files[0];
             btn.disabled = true;
-            statusDiv.textContent = "Word 파일 읽는 중...";
+            statusDiv.textContent = "변환을 시작합니다...";
 
             try {
-                const arrayBuffer = await file.arrayBuffer();
+                const arrayBuffer = await fileInput.files[0].arrayBuffer();
                 
-                // Mammoth를 사용하여 docx를 HTML로 변환
-                // 주의: ignoreEmptyParagraphs: false를 통해 빈 줄 보존
-                const result = await mammoth.convertToHtml(
-                    { arrayBuffer: arrayBuffer },
-                    { ignoreEmptyParagraphs: false }
-                );
-                
-                statusDiv.textContent = "텍스트 및 서식 분석 중...";
-                const htmlContent = result.value;
-                
-                // 임시 DOM을 만들어 파싱
+                // 1. Mammoth로 HTML 변환 (빈 줄 보존 중요)
+                const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, { ignoreEmptyParagraphs: false });
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, 'text/html');
-                
-                // 단락(<p>) 단위로 파싱하여 lines 배열 생성
-                const paragraphs = doc.querySelectorAll('p');
-                let lines = [];
-                paragraphs.forEach(p => {
-                    let lineObjs = parseNode(p, {});
-                    lines.push(lineObjs); // 한 줄은 서식이 포함된 텍스트 객체들의 배열
+                const doc = parser.parseFromString(result.value, 'text/html');
+                const paragraphs = Array.from(doc.querySelectorAll('p'));
+
+                // 2. 데이터 정제: 각 단락을 서식 객체 배열로 변환
+                let allLines = paragraphs.map(p => {
+                    const lineContent = parseNode(p, {});
+                    const rawText = p.textContent.trim();
+                    return { content: lineContent, isEmpty: rawText === "" };
                 });
 
-                // 로직 요구사항 1: 슬라이드 분할
-                const splitCriteria = document.getElementById('split-criteria').value;
-                const enforceMaxLines = document.getElementById('max-lines').checked;
-                
-                let chunks = [];
-                let currentChunk = [];
-
-                // 1차 분할: 빈 줄 또는 구분선
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i];
-                    let lineText = line.map(o => o.text).join('').trim();
-
-                    let isSplitPoint = false;
-                    if (splitCriteria === 'empty' && lineText === '') {
-                        isSplitPoint = true;
-                    } else if (splitCriteria === 'separator' && lineText === '---') {
-                        isSplitPoint = true;
-                    }
-
-                    if (isSplitPoint) {
-                        if (currentChunk.length > 0) chunks.push(currentChunk);
-                        currentChunk = [];
+                // 3. 1차 분할: 빈 줄(엔터 2번) 기준
+                let initialChunks = [];
+                let tempChunk = [];
+                allLines.forEach(line => {
+                    if (line.isEmpty) {
+                        if (tempChunk.length > 0) {
+                            initialChunks.push(tempChunk);
+                            tempChunk = [];
+                        }
                     } else {
-                        // 구분선 자체가 아니고, 완전히 빈 줄이 아니거나(empty 조건이 아닐때) 저장
-                        if (lineText !== '' || splitCriteria !== 'empty') {
-                            currentChunk.push(line);
-                        }
+                        tempChunk.push(line.content);
                     }
-                }
-                if (currentChunk.length > 0) chunks.push(currentChunk);
+                });
+                if (tempChunk.length > 0) initialChunks.push(tempChunk);
 
-                // 2차 분할: 6줄 초과 시 강제 분할
+                // 4. 2차 분할: 6줄 초과 시 강제 분할 (로직 강화)
+                const enforceMaxLines = document.getElementById('max-lines').checked;
                 let finalChunks = [];
-                if (enforceMaxLines) {
-                    for (let chunk of chunks) {
-                        for (let j = 0; j < chunk.length; j += 6) {
-                            finalChunks.push(chunk.slice(j, j + 6));
-                        }
-                    }
-                } else {
-                    finalChunks = chunks;
-                }
 
-                statusDiv.textContent = "PPT 슬라이드 생성 중...";
-                
-                // PPT 생성 (PptxGenJS)
+                initialChunks.forEach(chunk => {
+                    if (enforceMaxLines && chunk.length > 6) {
+                        for (let i = 0; i < chunk.length; i += 6) {
+                            finalChunks.push(chunk.slice(i, i + 6));
+                        }
+                    } else {
+                        finalChunks.push(chunk);
+                    }
+                });
+
+                // 5. PPT 생성
                 let pptx = new PptxGenJS();
-                pptx.layout = 'LAYOUT_16x9'; // 16:9 비율
-                
+                pptx.layout = 'LAYOUT_16x9';
                 const fontSize = parseInt(document.getElementById('font-size').value);
-                const align = document.getElementById('text-align').value;
+                const textAlign = document.getElementById('text-align').value;
 
                 finalChunks.forEach(chunk => {
                     let slide = pptx.addSlide();
-                    slide.background = { fill: 'FFFFFF' }; // 흰색 배경
-
-                    let textArray = [];
+                    let textObjs = [];
                     
-                    chunk.forEach((line, index) => {
-                        if (line.length === 0) {
-                            // 빈 줄 처리
-                            textArray.push({ text: '', options: { breakLine: true } });
-                        } else {
-                            line.forEach(obj => {
-                                textArray.push({
-                                    text: obj.text,
-                                    options: {
-                                        bold: obj.options.bold || false,
-                                        color: obj.options.color || '000000', // 기본 글자색 검은색
-                                        fontFace: '옥션고딕 B', // 기본 폰트
-                                        fontSize: fontSize
-                                    }
-                                });
+                    chunk.forEach((line, idx) => {
+                        line.forEach(part => {
+                            textObjs.push({
+                                text: part.text,
+                                options: {
+                                    bold: part.options.bold || false,
+                                    color: part.options.color || '000000',
+                                    fontSize: fontSize,
+                                    fontFace: '옥션고딕 B'
+                                }
                             });
-                            // 마지막 줄이 아니면 줄바꿈 추가
-                            if (index < chunk.length - 1) {
-                                textArray.push({ text: '', options: { breakLine: true } });
-                            }
+                        });
+                        if (idx < chunk.length - 1) {
+                            textObjs.push({ text: '', options: { breakLine: true } });
                         }
                     });
 
-                    // PptxGenJS의 Text 객체 배열 방식 사용
-                    slide.addText(textArray, {
+                    slide.addText(textObjs, {
                         x: '5%', y: '5%', w: '90%', h: '90%',
-                        align: align,
-                        valign: 'middle', // 세로 정렬 중앙
-                        margin: 0
+                        align: textAlign, valign: 'middle'
                     });
                 });
 
-                statusDiv.textContent = "PPT 파일 다운로드 시작...";
-                await pptx.writeFile({ fileName: file.name.replace('.docx', '') + '_converted.pptx' });
-                
-                statusDiv.textContent = "변환 완료!";
-                statusDiv.style.color = "#10B981"; // 성공 시 초록색
-
-            } catch (error) {
-                console.error(error);
-                statusDiv.textContent = "오류가 발생했습니다: " + error.message;
-                statusDiv.style.color = "#EF4444"; // 에러 시 빨간색
+                await pptx.writeFile({ fileName: `Converted_PPT_${Date.now()}.pptx` });
+                statusDiv.textContent = "다운로드 완료!";
+            } catch (e) {
+                statusDiv.textContent = "에러 발생: " + e.message;
             } finally {
                 btn.disabled = false;
             }
