@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word to PPT Converter (Fixed)</title>
+    <title>Word to PPT Converter (Pro Version)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
@@ -51,14 +51,15 @@
         }
 
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
-        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); }
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-group label { cursor: pointer; font-size: 14px; font-weight: 500; }
 
         button {
             width: 100%; background-color: var(--primary); color: white; border: none;
             padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
         }
 
-        #status { margin-top: 20px; text-align: center; font-size: 14px; color: var(--primary); }
+        #status { margin-top: 20px; text-align: center; font-size: 14px; color: var(--primary); font-weight: 600; }
     </style>
 </head>
 <body>
@@ -104,24 +105,6 @@
             return hex.startsWith('#') ? hex.replace('#', '').toUpperCase() : '000000';
         }
 
-        // 특정 노드(p태그 등) 내부의 텍스트와 서식을 추출
-        function parseNode(node, currentStyle) {
-            let result = [];
-            node.childNodes.forEach(child => {
-                if (child.nodeType === Node.TEXT_NODE) {
-                    if (child.textContent.length > 0) {
-                        result.push({ text: child.textContent, options: { ...currentStyle } });
-                    }
-                } else if (child.nodeType === Node.ELEMENT_NODE) {
-                    let newStyle = { ...currentStyle };
-                    if (['STRONG', 'B'].includes(child.tagName)) newStyle.bold = true;
-                    if (child.style && child.style.color) newStyle.color = colorToHex(child.style.color);
-                    result = result.concat(parseNode(child, newStyle));
-                }
-            });
-            return result;
-        }
-
         async function startConversion() {
             const fileInput = document.getElementById('upload');
             const statusDiv = document.getElementById('status');
@@ -130,28 +113,60 @@
             if (!fileInput.files.length) { alert("파일을 선택해주세요."); return; }
 
             btn.disabled = true;
-            statusDiv.textContent = "변환을 시작합니다...";
+            statusDiv.textContent = "문서를 분석하는 중...";
 
             try {
                 const arrayBuffer = await fileInput.files[0].arrayBuffer();
                 
-                // 1. Mammoth로 HTML 변환 (빈 줄 보존 중요)
+                // Mammoth 변환
                 const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, { ignoreEmptyParagraphs: false });
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(result.value, 'text/html');
-                const paragraphs = Array.from(doc.querySelectorAll('p'));
 
-                // 2. 데이터 정제: 각 단락을 서식 객체 배열로 변환
-                let allLines = paragraphs.map(p => {
-                    const lineContent = parseNode(p, {});
-                    const rawText = p.textContent.trim();
-                    return { content: lineContent, isEmpty: rawText === "" };
+                // ---- 수정된 추출 로직: <p>와 <br> 모두 '줄바꿈'으로 완벽하게 인식 ----
+                let allLines = [];
+                let currentLine = [];
+
+                function traverseAndExtract(node, currentStyle) {
+                    node.childNodes.forEach(child => {
+                        if (child.nodeType === Node.TEXT_NODE) {
+                            if (child.textContent !== "") {
+                                currentLine.push({ text: child.textContent, options: { ...currentStyle } });
+                            }
+                        } else if (child.nodeType === Node.ELEMENT_NODE) {
+                            if (child.tagName === 'BR') {
+                                // Shift+Enter 줄바꿈 감지
+                                allLines.push(currentLine);
+                                currentLine = [];
+                            } else if (child.tagName === 'P') {
+                                // 단락 감지
+                                traverseAndExtract(child, currentStyle);
+                                allLines.push(currentLine);
+                                currentLine = [];
+                            } else {
+                                // 서식 유지 (Bold, Color 등)
+                                let newStyle = { ...currentStyle };
+                                if (['STRONG', 'B'].includes(child.tagName)) newStyle.bold = true;
+                                if (child.style && child.style.color) newStyle.color = colorToHex(child.style.color);
+                                traverseAndExtract(child, newStyle);
+                            }
+                        }
+                    });
+                }
+
+                traverseAndExtract(doc.body, {});
+                if (currentLine.length > 0) allLines.push(currentLine);
+
+                // 빈 줄의 정의를 텍스트 길이가 0인 것으로 명확화
+                const parsedLines = allLines.map(line => {
+                    const textStr = line.map(l => l.text).join('').trim();
+                    return { content: line, isEmpty: textStr === "" };
                 });
 
-                // 3. 1차 분할: 빈 줄(엔터 2번) 기준
+                // 1차 분할 (빈 줄 기준)
                 let initialChunks = [];
                 let tempChunk = [];
-                allLines.forEach(line => {
+                parsedLines.forEach(line => {
                     if (line.isEmpty) {
                         if (tempChunk.length > 0) {
                             initialChunks.push(tempChunk);
@@ -163,7 +178,7 @@
                 });
                 if (tempChunk.length > 0) initialChunks.push(tempChunk);
 
-                // 4. 2차 분할: 6줄 초과 시 강제 분할 (로직 강화)
+                // 2차 분할 (6줄 초과 시 강제 분할)
                 const enforceMaxLines = document.getElementById('max-lines').checked;
                 let finalChunks = [];
 
@@ -177,9 +192,15 @@
                     }
                 });
 
-                // 5. PPT 생성
+                statusDiv.textContent = "슬라이드를 생성하는 중...";
+
+                // ---- 수정된 PPT 생성 로직 ----
                 let pptx = new PptxGenJS();
-                pptx.layout = 'LAYOUT_16x9';
+                
+                // 핵심 수정: 기본 PptxGenJS의 작은 16:9 대신, 최신 MS PowerPoint 표준(13.33 x 7.5 인치) 비율 강제 적용
+                pptx.defineLayout({ name: 'WIDESCREEN_STANDARD', width: 13.33, height: 7.5 });
+                pptx.layout = 'WIDESCREEN_STANDARD';
+
                 const fontSize = parseInt(document.getElementById('font-size').value);
                 const textAlign = document.getElementById('text-align').value;
 
@@ -199,21 +220,25 @@
                                 }
                             });
                         });
+                        // 마지막 줄이 아니면 PptxGenJS 내부용 줄바꿈 추가
                         if (idx < chunk.length - 1) {
                             textObjs.push({ text: '', options: { breakLine: true } });
                         }
                     });
 
+                    // 텍스트 박스 사이즈도 표준 크기에 맞게 여백 조정 (가운데 정렬)
                     slide.addText(textObjs, {
                         x: '5%', y: '5%', w: '90%', h: '90%',
                         align: textAlign, valign: 'middle'
                     });
                 });
 
-                await pptx.writeFile({ fileName: `Converted_PPT_${Date.now()}.pptx` });
-                statusDiv.textContent = "다운로드 완료!";
+                await pptx.writeFile({ fileName: `Converted_${Date.now()}.pptx` });
+                statusDiv.textContent = "✨ 변환 완료 및 다운로드 성공!";
             } catch (e) {
+                console.error(e);
                 statusDiv.textContent = "에러 발생: " + e.message;
+                statusDiv.style.color = "red";
             } finally {
                 btn.disabled = false;
             }
